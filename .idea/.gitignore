@@ -1,0 +1,14 @@
+# Файлы, игнорируемые по умолчанию
+/shelf/
+/workspace.xml
+# Запросы HTTP-клиента в редакторе
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+/misc.xml
+/vcs.xml
+/modules.xml
+/restapi_gnivc.iml
+/inspectionProfiles/profiles_settings.xml

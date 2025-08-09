@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "restapi-gnivc"
+version = "0.1.0"
+description = ""
+authors = ["Chu4hel <106600877+Chu4hel@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
