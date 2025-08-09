@@ -1,2 +1,14 @@
+# Файлы окружения
+.env
+.env.*
+
+# Кэш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+/.venv
+/.idea
 
 *.txt
