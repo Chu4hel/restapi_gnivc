@@ -51,3 +51,8 @@ class Receipt(ReceiptBase):
     items: List[Item] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReceiptCreate(ReceiptBase):
+    """Схема для создания нового чека."""
+    items: List[ItemCreate] = []

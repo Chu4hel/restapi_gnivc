@@ -34,3 +34,14 @@ async def read_receipt_endpoint(
     if db_receipt is None:
         raise HTTPException(status_code=404, detail="Receipt not found")
     return db_receipt
+
+
+@router.post("/", response_model=Receipt, status_code=status.HTTP_201_CREATED)
+async def create_receipt_endpoint(
+        receipt: ReceiptCreate,
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    Создать новый чек.
+    """
+    return await crud_receipt.create_receipt(db=db, receipt=receipt)

@@ -52,3 +52,27 @@ async def get_receipts(db: AsyncSession, skip: int = 0, limit: int = 100):
         select(Receipt).options(selectinload(Receipt.items)).offset(skip).limit(limit)
     )
     return result.scalars().all()
+
+
+async def create_receipt(db: AsyncSession, receipt: ReceiptCreate):
+    """
+    Создает новый чек в базе данных.
+
+    Args:
+        db (AsyncSession): Сессия базы данных.
+        receipt (ReceiptCreate): Данные для создания нового чека.
+
+    Returns:
+        Receipt: Созданный объект чека.
+    """
+    db_receipt = Receipt(user_id=receipt.user_id)
+    db.add(db_receipt)
+    await db.flush()
+
+    for item_data in receipt.items:
+        db_item = Item(**item_data.model_dump(), receipt_id=db_receipt.id)
+        db.add(db_item)
+
+    await db.commit()
+    await db.refresh(db_receipt)
+    return db_receipt
