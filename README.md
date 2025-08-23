@@ -1,65 +1,108 @@
-# Receipts API
+# API для Чеков
 
-Это FastAPI-приложение для управления чеками.
+Это FastAPI-приложение для управления чеками, пользователями, организациями и накладными.
 
-## Запуск приложения
+## Основные возможности
 
-Для запуска приложения в режиме разработки используйте следующую команду:
+- Создание, чтение, обновление и удаление чеков, пользователей, организаций и накладных.
+- Связывание чеков с накладными.
+- Аналитика продаж по организациям.
+- Поиск чеков по пользователю за определенный период.
+- Анализ товаров/услуг по категориям.
+
+## Технологии
+
+- **FastAPI:** Современный, быстрый (высокопроизводительный) веб-фреймворк для создания API.
+- **PostgreSQL:** Мощная, объектно-реляционная система баз данных с открытым исходным кодом.
+- **SQLAlchemy:** SQL-инструментарий и ORM для Python.
+- **Alembic:** Инструмент для миграции баз данных для SQLAlchemy.
+- **Docker & Docker Compose:** Для контейнеризации и управления средой разработки.
+
+## Настройка и запуск
+
+### 1. Клонируйте репозиторий
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+git clone <URL репозитория>
+cd <название папки>
+```
+
+### 2. Создайте файл `.env`
+
+Создайте файл `.env` в корневой директории проекта и скопируйте в него содержимое файла `.env.example` (если он есть)
+или заполните его следующими переменными:
+
+```
+# PostgreSQL
+POSTGRES_SERVER=db
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword
+POSTGRES_DB=receipts_db
+POSTGRES_PORT=5432
+```
+
+### 3. Запустите приложение с помощью Docker Compose
+
+```bash
+docker-compose up -d --build
+```
+
+Эта команда соберет и запустит контейнеры с приложением и базой данных в фоновом режиме.
+
+### 4. Примените миграции базы данных
+
+После запуска контейнеров вам нужно применить миграции базы данных. Для этого выполните следующую команду:
+
+```bash
+docker-compose exec api alembic upgrade head
+```
+
+### 5. Заполните базу данных тестовыми данными (опционально)
+
+Вы можете заполнить базу данных тестовыми данными, выполнив следующий скрипт:
+
+```bash
+docker-compose exec api python -m scripts.populate_db
 ```
 
 ## Документация API
 
 Интерактивная документация API доступна после запуска приложения:
 
--   **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
--   **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-## Эндпоинты API
+## Основные эндпоинты API
 
-API доступен по адресу `/api/v1/receipts`.
+### Чеки
 
-### Получить все чеки
+- `GET /api/v1/checks/`: Получить список чеков.
+- `GET /api/v1/checks/{check_id}`: Получить чек по ID.
+- `GET /api/v1/checks/{check_id}/full`: Получить полную информацию о чеке.
+- `POST /api/v1/checks/`: Создать новый чек.
+- `POST /api/v1/checks/{check_id}/invoices/{invoice_id}`: Связать чек с накладной.
 
--   **Эндпоинт:** `GET /api/v1/receipts/`
--   **Описание:** Получает список всех чеков.
--   **Ссылка для браузера:** [http://localhost:8000/api/v1/receipts/](http://localhost:8000/api/v1/receipts/)
--   **Команда cURL:**
-    ```bash
-    curl -X GET "http://localhost:8000/api/v1/receipts/" -H "accept: application/json"
-    ```
+### Пользователи
 
-### Получить чек по ID
+- `GET /api/v1/users/`: Получить список пользователей.
+- `GET /api/v1/users/{user_id}`: Получить пользователя по ID.
+- `POST /api/v1/users/`: Создать нового пользователя.
 
--   **Эндпоинт:** `GET /api/v1/receipts/{receipt_id}`
--   **Описание:** Получает конкретный чек по его ID.
--   **Ссылка для браузера:** [http://localhost:8000/api/v1/receipts/1](http://localhost:8000/api/v1/receipts/1) (замените `1` на существующий ID чека)
--   **Команда cURL:**
-    ```bash
-    curl -X GET "http://localhost:8000/api/v1/receipts/1" -H "accept: application/json"
-    ```
+### Организации
 
-### Создать чек
+- `GET /api/v1/organizations/`: Получить список организаций.
+- `GET /api/v1/organizations/{org_id}`: Получить организацию по ID.
+- `POST /api/v1/organizations/`: Создать новую организацию.
 
--   **Эндпоинт:** `POST /api/v1/receipts/`
--   **Описание:** Создает новый чек.
--   **Команда cURL:**
-    ```bash
-    curl -X POST "http://localhost:8000/api/v1/receipts/" -H "accept: application/json" -H "Content-Type: application/json" -d '{
-      "user_id": 1,
-      "items": [
-        {
-          "name": "item1",
-          "price": 100,
-          "quantity": 1
-        },
-        {
-          "name": "item2",
-          "price": 200,
-          "quantity": 2
-        }
-      ]
-    }'
-    ```
+### Накладные
+
+- `GET /api/v1/invoices/`: Получить список накладных.
+- `GET /api/v1/invoices/{invoice_id}`: Получить накладную по ID.
+- `GET /api/v1/invoices/{invoice_id}/checks`: Получить накладную с привязанными чеками.
+- `POST /api/v1/invoices/`: Создать новую накладную.
+
+### Аналитика
+
+- `GET /api/v1/analysis/sales_by_organization`: Анализ продаж по организациям.
+- `GET /api/v1/users/{user_id}/checks_by_date`: Поиск чеков по пользователю за период.
+- `GET /api/v1/analysis/items_by_category`: Анализ товаров/услуг по категориям.
