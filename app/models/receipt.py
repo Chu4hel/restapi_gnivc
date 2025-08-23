@@ -1,70 +1,97 @@
 """
 Модули базы данных SQLAlchemy для чеков и товаров.
 
-Определяет структуру таблиц `receipts` и `items` и их взаимосвязи.
+Определяет структуру таблиц `checks`, `items`, `users`, `organizations`, 
+`invoices` и их взаимосвязи.
 """
 from sqlalchemy import (
-    Column, Integer, String, Float, DateTime, ForeignKey, func
+    Column, Integer, String, Float, DateTime, ForeignKey, func, Numeric, SMALLINT, VARCHAR
 )
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
 
-class Receipt(Base):
+class User(Base):
+    """
+    Модель SQLAlchemy, представляющая пользователя.
+    """
+    __tablename__ = "users"
+
+    user_id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+
+    checks = relationship("Check", back_populates="user")
+
+
+class Organization(Base):
+    """
+    Модель SQLAlchemy, представляющая организацию.
+    """
+    __tablename__ = "organizations"
+
+    org_id = Column(Integer, primary_key=True, index=True)
+    org_name = Column(String, nullable=False)
+    legal_form = Column(VARCHAR(10))
+
+    checks = relationship("Check", back_populates="organization")
+
+
+class Invoice(Base):
+    """
+    Модель SQLAlchemy, представляющая накладную.
+    """
+    __tablename__ = "invoices"
+
+    invoice_id = Column(Integer, primary_key=True, index=True)
+    invoice_sum = Column(Numeric(10, 2), nullable=False)
+    invoice_type = Column(SMALLINT)
+    payment_type = Column(VARCHAR(10))
+
+    checks = relationship("Check", secondary="check_invoices", back_populates="invoices")
+
+
+class CheckInvoice(Base):
+    """
+    Ассоциативная таблица для связи многие-ко-многим между чеками и накладными.
+    """
+    __tablename__ = 'check_invoices'
+    check_id = Column(Integer, ForeignKey('checks.check_id'), primary_key=True)
+    invoice_id = Column(Integer, ForeignKey('invoices.invoice_id'), primary_key=True)
+
+
+class Check(Base):
     """
     Модель SQLAlchemy, представляющая чек в базе данных.
-
-    Атрибуты:
-        id (int): Уникальный идентификатор чека.
-        user_id (int): Идентификатор пользователя, которому принадлежит чек.
-        created_at (datetime): Дата и время создания чека.
-        items (relationship): Связь с товарами, принадлежащими этому чеку.
     """
-    __tablename__ = "receipts"
+    __tablename__ = "checks"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    check_id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    check_sum = Column(Numeric(10, 2), nullable=False)
 
-    # Связь "один-ко-многим": один чек может иметь много товаров
-    # cascade="all, delete-orphan" означает, что при удалении чека удалятся и все связанные с ним товары.
-    items = relationship("Item", back_populates="receipt", cascade="all, delete-orphan")
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    user = relationship("User", back_populates="checks")
+
+    org_id = Column(Integer, ForeignKey("organizations.org_id"), nullable=False)
+    organization = relationship("Organization", back_populates="checks")
+
+    items = relationship("Item", back_populates="check", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", secondary="check_invoices", back_populates="checks")
 
 
 class Item(Base):
     """
     Модель SQLAlchemy, представляющая товар в чеке.
-
-    Атрибуты:
-        id (int): Уникальный идентификатор товара.
-        name (str): Наименование товара.
-        price (int): Цена за единицу товара.
-        quantity (float): Количество товара.
-        sum (int): Общая стоимость товара.
-        invoice_type (int, optional): Тип накладной.
-        invoice_sum (int, optional): Сумма по накладной.
-        product_type (int, optional): Тип продукта.
-        payment_type (int, optional): Тип оплаты.
-        receipt_id (int): Внешний ключ, связывающий товар с чеком.
-        receipt (relationship): Обратная связь с объектом чека.
     """
     __tablename__ = "items"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    price = Column(Integer)
-    quantity = Column(Float)
-    sum = Column(Integer)
+    item_id = Column(Integer, primary_key=True, index=True)
+    item_name = Column(VARCHAR(255), nullable=False)
+    item_price = Column(Numeric(10, 2))
+    item_type = Column(SMALLINT)
+    item_quantity = Column(Numeric(8, 3))
+    item_sum = Column(Numeric(10, 2))
 
-    # Опциональные поля
-    invoice_type = Column(Integer, nullable=True)
-    invoice_sum = Column(Integer, nullable=True)
-    product_type = Column(Integer, nullable=True)
-    payment_type = Column(Integer, nullable=True)
-
-    # Внешний ключ для связи с таблицей чеков
-    receipt_id = Column(Integer, ForeignKey("receipts.id"), nullable=False)
-
-    # Обратная связь для удобного доступа к объекту чека из товара
-    receipt = relationship("Receipt", back_populates="items")
+    check_id = Column(Integer, ForeignKey("checks.check_id"), nullable=False)
+    check = relationship("Check", back_populates="items")

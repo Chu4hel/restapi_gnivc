@@ -5,7 +5,7 @@
 подключение роутеров и запуск фоновых задач.
 """
 from fastapi import FastAPI
-from app.api.v1.endpoints import receipts
+from app.api.v1.endpoints import checks
 from app.db.session import engine, Base
 
 
@@ -44,9 +44,9 @@ async def on_startup():
 
 # Подключаем роутер с нашими эндпоинтами
 app.include_router(
-    receipts.router,
-    prefix="/api/v1/receipts",  # Все роуты из receipts.py будут начинаться с этого префикса
-    tags=["Receipts"]  # Группировка в документации Swagger
+    checks.router,
+    prefix="/api/v1",
+    tags=["Checks"]
 )
 
 
