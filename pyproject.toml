@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Chu4hel <106600877+Chu4hel@users.noreply.github.com>"]
 readme = "README.md"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.13"
@@ -12,6 +13,8 @@ uvicorn = "^0.35.0"
 sqlalchemy = "^2.0.42"
 pydantic-settings = "^2.10.1"
 asyncpg = "^0.30.0"
+alembic = "^1.16.4"
+psycopg2 = "^2.9.10"
 
 
 [build-system]
