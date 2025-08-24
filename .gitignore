@@ -1,6 +1,7 @@
 # Файлы окружения
 .env
 .env.*
+!.env.example
 
 # Кэш Python
 __pycache__/
