@@ -1,6 +1,7 @@
 """
 Модуль с CRUD-операциями для модели Check.
 """
+from typing import Optional
 from datetime import date
 
 from sqlalchemy import text
@@ -21,12 +22,42 @@ async def get_check(db: AsyncSession, check_id: int):
     return result.scalars().first()
 
 
-async def get_checks(db: AsyncSession, skip: int = 0, limit: int = 100):
-    """Получить список чеков."""
-    result = await db.execute(
-        select(Check).options(selectinload(Check.items), selectinload(Check.user), selectinload(Check.organization),
-                              selectinload(Check.invoices)).offset(skip).limit(limit)
+async def get_checks(
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 100,
+        user_id: Optional[int] = None,
+        org_id: Optional[int] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None
+):
+    """Получить список чеков с фильтрацией и сортировкой."""
+    query = select(Check).options(
+        selectinload(Check.items),
+        selectinload(Check.user),
+        selectinload(Check.organization),
+        selectinload(Check.invoices)
     )
+
+    if user_id:
+        query = query.filter(Check.user_id == user_id)
+    if org_id:
+        query = query.filter(Check.org_id == org_id)
+    if start_date:
+        query = query.filter(Check.created_at >= start_date)
+    if end_date:
+        query = query.filter(Check.created_at <= end_date)
+
+    if sort_by:
+        if sort_order == "desc":
+            query = query.order_by(getattr(Check, sort_by).desc())
+        else:
+            query = query.order_by(getattr(Check, sort_by).asc())
+
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
     return result.scalars().all()
 
 

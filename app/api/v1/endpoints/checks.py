@@ -1,7 +1,7 @@
 """
 Эндпоинты для работы с чеками.
 """
-from typing import List
+from typing import List, Optional
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -20,11 +20,20 @@ router = APIRouter()
 async def read_checks_endpoint(
         skip: int = 0,
         limit: int = 100,
+        user_id: Optional[int] = None,
+        org_id: Optional[int] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = None,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
     """Получить список чеков."""
-    checks = await crud_check.get_checks(db, skip=skip, limit=limit)
+    checks = await crud_check.get_checks(
+        db, skip=skip, limit=limit, user_id=user_id, org_id=org_id,
+        start_date=start_date, end_date=end_date, sort_by=sort_by, sort_order=sort_order
+    )
     return checks
 
 
