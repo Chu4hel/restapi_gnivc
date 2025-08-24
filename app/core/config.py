@@ -20,12 +20,17 @@ class Settings(BaseSettings):
         POSTGRES_PASSWORD (str): Пароль для подключения к PostgreSQL.
         POSTGRES_DB (str): Название базы данных в PostgreSQL.
         POSTGRES_PORT (int): Порт для подключения к PostgreSQL.
+        SECRET_KEY (str): Секретный ключ для подписи JWT-токенов.
+        ACCESS_TOKEN_EXPIRE_MINUTES (int): Время жизни токена доступа в минутах.
     """
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_PORT: int
+    SECRET_KEY: str = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALGORITHM: str = "HS256"
 
     @property
     def DATABASE_URL(self) -> str:
