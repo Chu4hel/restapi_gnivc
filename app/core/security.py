@@ -12,8 +12,6 @@ from app.core.config import settings
 # Контекст для хеширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ALGORITHM = "HS256"
-
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Создает новый JWT-токен доступа."""
@@ -23,7 +21,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.now(UTC) + timedelta(minutes=15)  # Токен по умолчанию истекает через 15 минут
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 
