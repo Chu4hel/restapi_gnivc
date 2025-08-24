@@ -16,11 +16,40 @@ from app.core.logging import setup_logging
 # Настраиваем логирование
 setup_logging()
 
+# Метаданные для тегов Swagger
+tags_metadata = [
+    {
+        "name": "Пользователи",
+        "description": "Операции с пользователями: создание, чтение.",
+    },
+    {
+        "name": "Аутентификация",
+        "description": "Получение JWT-токена для доступа к защищенным эндпоинтам.",
+    },
+    {
+        "name": "Чеки",
+        "description": "Операции с чеками и аналитика.",
+    },
+    {
+        "name": "Организации",
+        "description": "Операции с организациями.",
+    },
+    {
+        "name": "Накладные",
+        "description": "Операции с накладными.",
+    },
+    {
+        "name": "Служебные",
+        "description": "Служебные эндпоинты, например, для проверки состояния здоровья сервиса.",
+    },
+]
+
 # Создаем экземпляр FastAPI
 app = FastAPI(
-    title="Receipts API",
-    description="API для чтения чеков.",
-    version="0.1.0",
+    title="API для Чеков",
+    description="Сервис для управления чеками, пользователями, организациями и накладными.",
+    version="1.0.0",
+    openapi_tags=tags_metadata,
 )
 
 
@@ -46,16 +75,16 @@ async def validation_exception_handler(request: Request, exc: Exception):
 
 
 # Подключаем роутеры с нашими эндпоинтами
-app.include_router(checks.router, prefix="/api/v1", tags=["Чеки"])
 app.include_router(users.router, prefix="/api/v1", tags=["Пользователи"])
+app.include_router(login.router, prefix="/api/v1", tags=["Аутентификация"])
+app.include_router(checks.router, prefix="/api/v1", tags=["Чеки"])
 app.include_router(organizations.router, prefix="/api/v1", tags=["Организации"])
 app.include_router(invoices.router, prefix="/api/v1", tags=["Накладные"])
-app.include_router(login.router, prefix="/api/v1", tags=["Аутентификация"])
 app.include_router(health.router, tags=["Служебные"])
 
 
 # Корневой эндпоинт для проверки, что API работает
-@app.get("/")
+@app.get("/", summary="Корневой эндпоинт", tags=["Служебные"])
 def read_root():
     """
     Корневой эндпоинт.

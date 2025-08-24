@@ -14,8 +14,14 @@ from app.schemas.check import User, UserCreate
 router = APIRouter()
 
 
-@router.post("/users/", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user_endpoint(
+@router.post(
+    "/users/",
+    response_model=User,
+    status_code=status.HTTP_201_CREATED,
+    summary="Создание нового пользователя",
+    responses={400: {"description": "Пользователь с таким именем уже существует"}}
+)
+async def create_user(
         user: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
@@ -26,8 +32,13 @@ async def create_user_endpoint(
     return await crud_user.create_user(db=db, user=user)
 
 
-@router.get("/users/", response_model=List[User])
-async def read_users_endpoint(
+@router.get(
+    "/users/",
+    response_model=List[User],
+    summary="Получение списка пользователей",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def read_users(
         skip: int = 0,
         limit: int = 100,
         db: AsyncSession = Depends(get_db),
@@ -38,8 +49,13 @@ async def read_users_endpoint(
     return users
 
 
-@router.get("/users/{user_id}", response_model=User)
-async def read_user_endpoint(
+@router.get(
+    "/users/{user_id}",
+    response_model=User,
+    summary="Получение пользователя по ID",
+    responses={401: {"description": "Не авторизован"}, 404: {"description": "Пользователь не найден"}}
+)
+async def read_user(
         user_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)

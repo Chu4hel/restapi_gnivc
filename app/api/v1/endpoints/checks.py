@@ -16,8 +16,13 @@ from app.schemas.check import User
 router = APIRouter()
 
 
-@router.get("/checks/", response_model=List[check_schema.Check])
-async def read_checks_endpoint(
+@router.get(
+    "/checks/",
+    response_model=List[check_schema.Check],
+    summary="Получение списка чеков с фильтрацией и сортировкой",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def read_checks(
         skip: int = 0,
         limit: int = 100,
         user_id: Optional[int] = None,
@@ -37,8 +42,13 @@ async def read_checks_endpoint(
     return checks
 
 
-@router.get("/checks/{check_id}", response_model=check_schema.Check)
-async def read_check_endpoint(
+@router.get(
+    "/checks/{check_id}",
+    response_model=check_schema.Check,
+    summary="Получение чека по ID",
+    responses={401: {"description": "Не авторизован"}, 404: {"description": "Чек не найден"}}
+)
+async def read_check(
         check_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -50,8 +60,14 @@ async def read_check_endpoint(
     return db_check
 
 
-@router.post("/checks/", response_model=check_schema.Check, status_code=status.HTTP_201_CREATED)
-async def create_check_endpoint(
+@router.post(
+    "/checks/",
+    response_model=check_schema.Check,
+    status_code=status.HTTP_201_CREATED,
+    summary="Создание нового чека",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def create_check(
         check: check_schema.CheckCreate,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -60,8 +76,13 @@ async def create_check_endpoint(
     return await crud_check.create_check(db=db, check=check)
 
 
-@router.get("/checks/{check_id}/full", response_model=check_schema.Check)
-async def read_full_check_endpoint(
+@router.get(
+    "/checks/{check_id}/full",
+    response_model=check_schema.Check,
+    summary="Получение полной информации о чеке",
+    responses={401: {"description": "Не авторизован"}, 404: {"description": "Чек не найден"}}
+)
+async def read_full_check(
         check_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -75,8 +96,13 @@ async def read_full_check_endpoint(
     return db_check
 
 
-@router.post("/checks/{check_id}/invoices/{invoice_id}", status_code=status.HTTP_201_CREATED)
-async def link_check_to_invoice_endpoint(
+@router.post(
+    "/checks/{check_id}/invoices/{invoice_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="Связывание чека с накладной",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def link_check_to_invoice(
         check_id: int,
         invoice_id: int,
         db: AsyncSession = Depends(get_db),
@@ -89,8 +115,13 @@ async def link_check_to_invoice_endpoint(
 
 
 # Эндпоинты для Аналитики
-@router.get("/analysis/sales_by_organization", response_model=List[check_schema.SalesByOrganization])
-async def analysis_sales_by_organization_endpoint(
+@router.get(
+    "/analysis/sales_by_organization",
+    response_model=List[check_schema.SalesByOrganization],
+    summary="Анализ продаж по организациям",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def analysis_sales_by_organization(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
@@ -101,8 +132,13 @@ async def analysis_sales_by_organization_endpoint(
     return sales_data
 
 
-@router.get("/users/{user_id}/checks_by_date", response_model=List[check_schema.UserCheck])
-async def analysis_checks_by_user_for_period_endpoint(
+@router.get(
+    "/users/{user_id}/checks_by_date",
+    response_model=List[check_schema.UserCheck],
+    summary="Поиск чеков по пользователю за период",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def analysis_checks_by_user_for_period(
         user_id: int,
         start_date: date,
         end_date: date,
@@ -117,8 +153,13 @@ async def analysis_checks_by_user_for_period_endpoint(
     return user_checks
 
 
-@router.get("/analysis/items_by_category", response_model=List[check_schema.ItemsByCategory])
-async def analysis_items_by_category_endpoint(
+@router.get(
+    "/analysis/items_by_category",
+    response_model=List[check_schema.ItemsByCategory],
+    summary="Анализ товаров/услуг по категориям",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def analysis_items_by_category(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):

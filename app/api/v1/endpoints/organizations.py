@@ -9,14 +9,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.dependencies import get_current_user
 from app.crud import crud_organization
 from app.db.session import get_db
-from app.schemas.check import Organization, OrganizationCreate
-from app.schemas.check import User
+from app.schemas.check import Organization, OrganizationCreate, User
 
 router = APIRouter()
 
 
-@router.post("/organizations/", response_model=Organization, status_code=status.HTTP_201_CREATED)
-async def create_organization_endpoint(
+@router.post(
+    "/organizations/",
+    response_model=Organization,
+    status_code=status.HTTP_201_CREATED,
+    summary="Создание новой организации",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def create_organization(
         organization: OrganizationCreate,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -25,8 +30,13 @@ async def create_organization_endpoint(
     return await crud_organization.create_organization(db=db, organization=organization)
 
 
-@router.get("/organizations/", response_model=List[Organization])
-async def read_organizations_endpoint(
+@router.get(
+    "/organizations/",
+    response_model=List[Organization],
+    summary="Получение списка организаций",
+    responses={401: {"description": "Не авторизован"}}
+)
+async def read_organizations(
         skip: int = 0,
         limit: int = 100,
         db: AsyncSession = Depends(get_db),
@@ -37,8 +47,13 @@ async def read_organizations_endpoint(
     return organizations
 
 
-@router.get("/organizations/{org_id}", response_model=Organization)
-async def read_organization_endpoint(
+@router.get(
+    "/organizations/{org_id}",
+    response_model=Organization,
+    summary="Получение организации по ID",
+    responses={401: {"description": "Не авторизован"}, 404: {"description": "Организация не найдена"}}
+)
+async def read_organization(
         org_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)

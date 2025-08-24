@@ -1,14 +1,19 @@
 """
 Эндпоинт для проверки работоспособности приложения.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.db.session import check_db_connection
 
 router = APIRouter()
 
 
-@router.get("/health", status_code=status.HTTP_200_OK)
+@router.get(
+    "/health",
+    status_code=status.HTTP_200_OK,
+    summary="Проверка работоспособности сервиса",
+    responses={503: {"description": "База данных недоступна"}}
+)
 async def health_check():
     """
     Проверяет доступность базы данных.

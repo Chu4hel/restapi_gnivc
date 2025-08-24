@@ -16,7 +16,12 @@ from app.schemas.token import Token
 router = APIRouter()
 
 
-@router.post("/login/token", response_model=Token)
+@router.post(
+    "/login/token",
+    response_model=Token,
+    summary="Получение токена доступа",
+    responses={401: {"description": "Неверное имя пользователя или пароль"}}
+)
 async def login_for_access_token(
         db: AsyncSession = Depends(get_db),
         form_data: OAuth2PasswordRequestForm = Depends()
