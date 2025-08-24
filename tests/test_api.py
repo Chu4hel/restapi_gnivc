@@ -5,8 +5,8 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud import crud_user, crud_organization
-from app.schemas.check import UserCreate, OrganizationCreate
+from app.crud import crud_user, crud_organization, crud_invoice, crud_check
+from app.schemas.check import UserCreate, OrganizationCreate, InvoiceCreate, CheckCreate, ItemCreate
 
 pytestmark = pytest.mark.asyncio
 
@@ -73,6 +73,42 @@ async def test_create_organization(client: AsyncClient, db_session: AsyncSession
     assert data["org_name"] == "Test Org"
 
 
+async def test_read_organizations(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения списка организаций."""
+    token = await create_user_and_get_token(client, db_session, "org_user_2", "org_password_2")
+    await crud_organization.create_organization(db_session, OrganizationCreate(org_name="Test Org 2"))
+    response = await client.get(
+        "/api/v1/organizations/",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+async def test_read_organization(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения организации по ID."""
+    token = await create_user_and_get_token(client, db_session, "org_user_3", "org_password_3")
+    org = await crud_organization.create_organization(db_session, OrganizationCreate(org_name="Test Org 3"))
+    response = await client.get(
+        f"/api/v1/organizations/{org.org_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["org_name"] == "Test Org 3"
+
+
+async def test_create_organization_unauthenticated(client: AsyncClient, db_session: AsyncSession):
+    """Тест создания организации без аутентификации."""
+    response = await client.post(
+        "/api/v1/organizations/",
+        json={"org_name": "Test Org 4", "legal_form": "PAO"},
+    )
+    assert response.status_code == 401
+
+
 # --- Тесты для накладных ---
 
 async def test_create_invoice(client: AsyncClient, db_session: AsyncSession):
@@ -86,6 +122,33 @@ async def test_create_invoice(client: AsyncClient, db_session: AsyncSession):
     assert response.status_code == 201
     data = response.json()
     assert data["invoice_sum"] == 1000
+
+
+async def test_read_invoices(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения списка накладных."""
+    token = await create_user_and_get_token(client, db_session, "invoice_user_2", "invoice_password_2")
+    await crud_invoice.create_invoice(db_session, InvoiceCreate(invoice_sum=2000))
+    response = await client.get(
+        "/api/v1/invoices/",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+async def test_read_invoice(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения накладной по ID."""
+    token = await create_user_and_get_token(client, db_session, "invoice_user_3", "invoice_password_3")
+    invoice = await crud_invoice.create_invoice(db_session, InvoiceCreate(invoice_sum=3000))
+    response = await client.get(
+        f"/api/v1/invoices/{invoice.invoice_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["invoice_sum"] == 3000
 
 
 # --- Тесты для чеков ---
@@ -115,3 +178,40 @@ async def test_create_check(client: AsyncClient, db_session: AsyncSession):
     assert response.status_code == 201
     data = response.json()
     assert data["check_sum"] == 500
+
+
+async def test_read_checks(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения списка чеков."""
+    token = await create_user_and_get_token(client, db_session, "check_user_2", "check_password_2")
+    user = await crud_user.create_user(db_session,
+                                       UserCreate(username="check_test_user_2", password="check_test_password_2"))
+    organization = await crud_organization.create_organization(db_session,
+                                                               OrganizationCreate(org_name="Check Test Org 2"))
+    await crud_check.create_check(db_session,
+                                  CheckCreate(check_sum=1000, user_id=user.user_id, org_id=organization.org_id))
+    response = await client.get(
+        "/api/v1/checks/",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+async def test_read_check(client: AsyncClient, db_session: AsyncSession):
+    """Тест получения чека по ID."""
+    token = await create_user_and_get_token(client, db_session, "check_user_3", "check_password_3")
+    user = await crud_user.create_user(db_session,
+                                       UserCreate(username="check_test_user_3", password="check_test_password_3"))
+    organization = await crud_organization.create_organization(db_session,
+                                                               OrganizationCreate(org_name="Check Test Org 3"))
+    check = await crud_check.create_check(db_session,
+                                          CheckCreate(check_sum=1500, user_id=user.user_id, org_id=organization.org_id))
+    response = await client.get(
+        f"/api/v1/checks/{check.check_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["check_sum"] == 1500
