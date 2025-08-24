@@ -215,3 +215,43 @@ async def test_read_check(client: AsyncClient, db_session: AsyncSession):
     assert response.status_code == 200
     data = response.json()
     assert data["check_sum"] == 1500
+
+
+# --- Тесты для фильтрации и сортировки ---
+
+async def test_filter_checks_by_user(client: AsyncClient, db_session: AsyncSession):
+    """Тест фильтрации чеков по пользователю."""
+    token = await create_user_and_get_token(client, db_session, "filter_user", "filter_password")
+    user1 = await crud_user.create_user(db_session, UserCreate(username="filter_user_1", password="password"))
+    user2 = await crud_user.create_user(db_session, UserCreate(username="filter_user_2", password="password"))
+    org = await crud_organization.create_organization(db_session, OrganizationCreate(org_name="Filter Org"))
+    await crud_check.create_check(db_session, CheckCreate(check_sum=100, user_id=user1.user_id, org_id=org.org_id))
+    await crud_check.create_check(db_session, CheckCreate(check_sum=200, user_id=user2.user_id, org_id=org.org_id))
+
+    response = await client.get(
+        f"/api/v1/checks/?user_id={user1.user_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["user_id"] == user1.user_id
+
+
+async def test_sort_checks_by_sum(client: AsyncClient, db_session: AsyncSession):
+    """Тест сортировки чеков по сумме."""
+    token = await create_user_and_get_token(client, db_session, "sort_user", "sort_password")
+    user = await crud_user.create_user(db_session, UserCreate(username="sort_test_user", password="password"))
+    org = await crud_organization.create_organization(db_session, OrganizationCreate(org_name="Sort Org"))
+    await crud_check.create_check(db_session, CheckCreate(check_sum=100, user_id=user.user_id, org_id=org.org_id))
+    await crud_check.create_check(db_session, CheckCreate(check_sum=200, user_id=user.user_id, org_id=org.org_id))
+
+    response = await client.get(
+        "/api/v1/checks/?sort_by=check_sum&sort_order=desc",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert data[0]["check_sum"] == 200
+    assert data[1]["check_sum"] == 100
