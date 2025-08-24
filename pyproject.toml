@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Chu4hel <106600877+Chu4hel@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{include = "app"}]
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.13"
@@ -17,7 +17,17 @@ alembic = "^1.16.4"
 psycopg2 = "^2.9.10"
 python-jose = "^3.5.0"
 passlib = "^1.7.4"
+bcrypt = "^4.3.0"
+python-multipart = "^0.0.20"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+httpx = "^0.28.1"
+pytest-asyncio = "^1.1.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core"]
