@@ -18,7 +18,8 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    pass
+    """Схема для создания нового пользователя. Включает поле 'password'."""
+    password: str
 
 
 class User(UserBase):
