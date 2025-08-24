@@ -65,6 +65,25 @@ docker-compose exec api alembic upgrade head
 docker-compose exec api python -m scripts.populate_db
 ```
 
+## Локальный запуск (без Docker)
+
+Если вы хотите запустить приложение локально без Docker, вам нужно:
+
+1.  **Установить и запустить PostgreSQL:** Убедитесь, что у вас установлен и запущен PostgreSQL.
+2.  **Настроить `.env`:** Измените переменные `POSTGRES_*` в вашем `.env` файле, чтобы они соответствовали настройкам вашего локального PostgreSQL.
+3.  **Установить зависимости:**
+    ```bash
+    poetry install
+    ```
+4.  **Применить миграции:**
+    ```bash
+    poetry run alembic upgrade head
+    ```
+5.  **Запустить приложение:**
+    ```bash
+    poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+
 ## Документация API
 
 Интерактивная документация API доступна после запуска приложения:
