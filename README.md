@@ -106,3 +106,7 @@ docker-compose exec api python -m scripts.populate_db
 - `GET /api/v1/analysis/sales_by_organization`: Анализ продаж по организациям.
 - `GET /api/v1/users/{user_id}/checks_by_date`: Поиск чеков по пользователю за период.
 - `GET /api/v1/analysis/items_by_category`: Анализ товаров/услуг по категориям.
+
+### Служебные
+
+- `GET /health`: Проверка работоспособности приложения.
