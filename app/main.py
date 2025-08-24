@@ -10,7 +10,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.api.v1.endpoints import checks, users, organizations, invoices, login
+from app.api.v1.endpoints import checks, users, organizations, invoices, login, health
 from app.core.logging import setup_logging
 
 # Настраиваем логирование
@@ -51,6 +51,7 @@ app.include_router(users.router, prefix="/api/v1", tags=["Пользовател
 app.include_router(organizations.router, prefix="/api/v1", tags=["Организации"])
 app.include_router(invoices.router, prefix="/api/v1", tags=["Накладные"])
 app.include_router(login.router, prefix="/api/v1", tags=["Аутентификация"])
+app.include_router(health.router, tags=["Служебные"])
 
 
 # Корневой эндпоинт для проверки, что API работает
