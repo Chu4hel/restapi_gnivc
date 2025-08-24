@@ -20,6 +20,7 @@ class User(Base):
 
     user_id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    hashed_password = Column(String, nullable=False)
 
     checks = relationship("Check", back_populates="user")
 
